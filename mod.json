@@ -1,0 +1,81 @@
+{
+    "geode": "4.10.2",
+    "gd": {
+        "win": "2.2074",
+        "android": "2.2074",
+        "mac": "2.2074",
+        "ios": "2.2074"
+    },
+    "links": {
+        "community": "link",
+        "source":"github" 
+    },
+    "id": "kiwizariu.cryptic",
+    "name": "cryptic",
+    "version": "v1.0.0",
+    "developer": "kiwizariu",
+	
+    "description": "Practice tools.",
+    "dependencies": {
+        "geode.node-ids": ">=v1.20.0"
+	
+    },
+    "settings": {
+        "appearance": {
+            "type": "title",
+            "name": "Appearance"
+        },
+        "accent-color": {
+            "type": "rgb",
+            "name": "Accent Color",
+            "description": "Color used for HUD values and menu highlights.",
+            "default": { "r": 100, "g": 200, "b": 255 }
+        },
+        "hud-section": {
+            "type": "title",
+            "name": "HUD"
+        },
+        "show-fps": {
+            "type": "bool",
+            "name": "Show FPS",
+            "default": true
+        },
+        "show-speed": {
+            "type": "bool",
+            "name": "Show Speed",
+            "default": true
+        },
+        "show-attempts": {
+            "type": "bool",
+            "name": "Show Attempts",
+            "default": true
+        },
+        "show-best-run": {
+            "type": "bool",
+            "name": "Show Best Run %",
+            "description": "Best % reached this session (resets on level exit).",
+            "default": true
+        },
+        "show-cps": {
+            "type": "bool",
+            "name": "Show CPS",
+            "default": true
+        },
+        "cheats-section": {
+            "type": "title",
+            "name": "Cheats"
+        },
+        "noclip": {
+            "type": "bool",
+            "name": "Noclip",
+            "description": "Player cannot die.",
+            "default": false
+        },
+        "instant-complete": {
+            "type": "bool",
+            "name": "Instant Complete",
+            "description": "Level completes immediately on start.",
+            "default": false
+        }
+    }
+}
