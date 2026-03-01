@@ -1,5 +1,6 @@
 #pragma once
 #include "State.hpp"
+#include "OrbFarm.hpp"
 
 // ─────────────────────────────────────────────
 //  FeatureRow
@@ -11,151 +12,332 @@ public:
     CCMenuItemSpriteExtra* m_btn = nullptr;
 
 private:
-    CCLayerColor* m_bg = nullptr;
+    CCLayerColor*  m_bg  = nullptr;
+    CCLabelBMFont* m_lbl = nullptr;
 
 public:
     static FeatureRow* create(
-        const std::string& label,
-        const std::string& settingKey,
-        bool               isCommand,
-        int                keyIdx,
-        CCObject*          target,
-        SEL_MenuHandler    toggleSel,
-        SEL_MenuHandler    cmdSel,
-        float              w)
+        const std::string& label, const std::string& settingKey,
+        bool isCommand, int keyIdx, CCObject* target,
+        SEL_MenuHandler toggleSel, SEL_MenuHandler cmdSel, float w)
     {
         auto* r = new FeatureRow();
         r->m_label = label;
-        if (r->init(label, settingKey, isCommand, keyIdx,
-                    target, toggleSel, cmdSel, w)) {
+        if (r->init(label, settingKey, isCommand, keyIdx, target, toggleSel, cmdSel, w)) {
             r->autorelease(); return r;
         }
         CC_SAFE_DELETE(r); return nullptr;
     }
 
     bool init(
-        const std::string& label,
-        const std::string& settingKey,
-        bool               isCommand,
-        int                keyIdx,
-        CCObject*          target,
-        SEL_MenuHandler    toggleSel,
-        SEL_MenuHandler    cmdSel,
-        float              w)
+        const std::string& label, const std::string& settingKey,
+        bool isCommand, int keyIdx, CCObject* target,
+        SEL_MenuHandler toggleSel, SEL_MenuHandler cmdSel, float w)
     {
         if (!CCNode::init()) return false;
-        setContentSize({ w, 26.f });
+        setContentSize({ w, 28.f });
 
-        m_bg = CCLayerColor::create({ 0,0,0,0 }, w, 26.f);
+        m_bg = CCLayerColor::create({ 0,0,0,0 }, w, 28.f);
         m_bg->ignoreAnchorPointForPosition(false);
         m_bg->setAnchorPoint({ 0.f, 0.f });
         addChild(m_bg, 0);
 
-        // Tag icon per type
-        const char* icon = isCommand ? "▶" : "•";
-        auto* iconLbl = CCLabelBMFont::create(icon, "chatFont.fnt");
-        iconLbl->setScale(0.4f);
-        iconLbl->setAnchorPoint({ 0.f, 0.5f });
-        iconLbl->setPosition({ 6.f, 13.f });
-        iconLbl->setColor({ 100, 100, 120 });
-        addChild(iconLbl, 1);
+        auto* pip = CCLayerColor::create({ 70,70,100,0 }, 2.f, 14.f);
+        pip->ignoreAnchorPointForPosition(false);
+        pip->setAnchorPoint({ 0.f, 0.5f });
+        pip->setPosition({ 4.f, 14.f });
+        pip->setTag(99);
+        addChild(pip, 1);
 
-        auto* lbl = CCLabelBMFont::create(label.c_str(), "bigFont.fnt");
-        lbl->setScale(0.37f);
-        lbl->setAnchorPoint({ 0.f, 0.5f });
-        lbl->setColor({ 220, 220, 230 });
-        lbl->setPosition({ 20.f, 13.f });
-        addChild(lbl, 1);
+        m_lbl = CCLabelBMFont::create(label.c_str(), "bigFont.fnt");
+        m_lbl->setScale(0.38f);
+        m_lbl->setAnchorPoint({ 0.f, 0.5f });
+        m_lbl->setColor({ 210, 210, 225 });
+        m_lbl->setPosition({ 14.f, 14.f });
+        addChild(m_lbl, 1);
 
         auto* menu = CCMenu::create();
         menu->setPosition({ 0.f, 0.f });
-        menu->setContentSize({ w, 26.f });
-        addChild(menu, 1);
+        menu->setContentSize({ w, 28.f });
+        addChild(menu, 2);
 
         if (isCommand) {
-            auto* spr = ButtonSprite::create(
-                "Run", "bigFont.fnt", "GJ_button_04.png", 0.5f
-            );
-            spr->setScale(0.48f);
+            auto* spr = ButtonSprite::create("Run", "bigFont.fnt", "GJ_button_04.png", 0.5f);
+            spr->setScale(0.46f);
             m_btn = CCMenuItemSpriteExtra::create(spr, target, cmdSel);
             m_btn->setAnchorPoint({ 1.f, 0.5f });
-            m_btn->setPosition({ w - 8.f, 13.f });
+            m_btn->setPosition({ w - 8.f, 14.f });
             menu->addChild(m_btn);
         } else {
             bool cur = Mod::get()->getSettingValue<bool>(settingKey.c_str());
-            m_tog = CCMenuItemToggler::createWithStandardSprites(
-                target, toggleSel, 0.52f
-            );
+            m_tog = CCMenuItemToggler::createWithStandardSprites(target, toggleSel, 0.54f);
             m_tog->toggle(cur);
             m_tog->setTag(keyIdx);
             m_tog->setAnchorPoint({ 1.f, 0.5f });
-            m_tog->setPosition({ w - 8.f, 13.f });
+            m_tog->setPosition({ w - 8.f, 14.f });
             menu->addChild(m_tog);
         }
         return true;
     }
 
     void setStripe(bool on) {
-        m_bg->setColor({ 22, 22, 34 });
-        m_bg->setOpacity(on ? 90 : 0);
+        m_bg->setColor({ 20, 20, 32 });
+        m_bg->setOpacity(on ? 100 : 0);
+        if (auto* p = dynamic_cast<CCLayerColor*>(getChildByTag(99))) p->setOpacity(0);
     }
 
     void setHighlight(bool on) {
-        m_bg->setColor(on ? ccColor3B{ 50, 60, 100 } : ccColor3B{ 22, 22, 34 });
-        m_bg->setOpacity(on ? 160 : 0);
+        m_bg->setColor({ 40, 52, 90 });
+        m_bg->setOpacity(on ? 180 : 0);
+        if (auto* p = dynamic_cast<CCLayerColor*>(getChildByTag(99))) p->setOpacity(on ? 200 : 0);
+        if (m_lbl) m_lbl->setColor(on ? ccColor3B{255,255,255} : ccColor3B{210,210,225});
     }
 };
 
 // ─────────────────────────────────────────────
-//  Section header row
+//  SectionHeader
 // ─────────────────────────────────────────────
 class SectionHeader : public CCNode {
 public:
-    static SectionHeader* create(const char* title, ccColor3B accent, float w) {
+    static SectionHeader* create(const char* title, ccColor3B col, float w) {
         auto* h = new SectionHeader();
-        if (h->init(title, accent, w)) { h->autorelease(); return h; }
+        if (h->init(title, col, w)) { h->autorelease(); return h; }
         CC_SAFE_DELETE(h); return nullptr;
     }
-    bool init(const char* title, ccColor3B accent, float w) {
+    bool init(const char* title, ccColor3B col, float w) {
         if (!CCNode::init()) return false;
-        setContentSize({ w, 20.f });
+        setContentSize({ w, 22.f });
 
-        // accent line left
-        auto* line = CCLayerColor::create({ accent.r, accent.g, accent.b, 180 }, 3.f, 14.f);
-        line->ignoreAnchorPointForPosition(false);
-        line->setAnchorPoint({ 0.f, 0.5f });
-        line->setPosition({ 6.f, 10.f });
-        addChild(line);
+        auto* bar = CCLayerColor::create({ col.r,col.g,col.b,180 }, w - 8.f, 1.f);
+        bar->ignoreAnchorPointForPosition(false);
+        bar->setAnchorPoint({ 0.f, 0.5f });
+        bar->setPosition({ 4.f, 11.f });
+        addChild(bar);
+
+        auto* pill = CCLayerColor::create({ 11,11,17,255 }, 60.f, 14.f);
+        pill->ignoreAnchorPointForPosition(false);
+        pill->setAnchorPoint({ 0.f, 0.5f });
+        pill->setPosition({ 10.f, 11.f });
+        addChild(pill, 1);
 
         auto* lbl = CCLabelBMFont::create(title, "bigFont.fnt");
-        lbl->setScale(0.32f);
-        lbl->setColor({ accent.r, accent.g, accent.b });
+        lbl->setScale(0.3f);
+        lbl->setColor({ col.r, col.g, col.b });
         lbl->setAnchorPoint({ 0.f, 0.5f });
-        lbl->setPosition({ 14.f, 10.f });
-        addChild(lbl);
+        lbl->setPosition({ 12.f, 11.f });
+        addChild(lbl, 2);
+        return true;
+    }
+};
 
-        // thin separator line
-        auto* sep = CCLayerColor::create({ 60, 60, 80, 120 }, w - 20.f, 1.f);
-        sep->ignoreAnchorPointForPosition(false);
-        sep->setAnchorPoint({ 0.f, 0.5f });
-        sep->setPosition({ 14.f + lbl->getContentSize().width * 0.32f + 6.f, 10.f });
-        addChild(sep);
+// ─────────────────────────────────────────────
+//  SliderRow  (+/- stepper)
+// ─────────────────────────────────────────────
+class SliderRow : public CCNode {
+    CCLabelBMFont* m_valLbl = nullptr;
+    float          m_value;
+    float          m_min, m_max, m_step;
+    std::string    m_key;
+    bool           m_isInt;
+    std::function<void(float)> m_cb;
+
+public:
+    static SliderRow* create(const char* label, const std::string& key,
+        float mn, float mx, float step, bool isInt, float w,
+        std::function<void(float)> cb = nullptr)
+    {
+        auto* r = new SliderRow();
+        if (r->init(label, key, mn, mx, step, isInt, w, cb)) { r->autorelease(); return r; }
+        CC_SAFE_DELETE(r); return nullptr;
+    }
+
+    bool init(const char* label, const std::string& key,
+        float mn, float mx, float step, bool isInt, float w,
+        std::function<void(float)> cb)
+    {
+        if (!CCNode::init()) return false;
+        setContentSize({ w, 28.f });
+        m_key = key; m_min = mn; m_max = mx; m_step = step; m_isInt = isInt; m_cb = cb;
+
+        if (isInt) {
+            try { m_value = (float)Mod::get()->getSettingValue<int64_t>(key.c_str()); }
+            catch(...) { m_value = mn; }
+        } else {
+            try { m_value = (float)Mod::get()->getSettingValue<double>(key.c_str()); }
+            catch(...) { m_value = mn; }
+        }
+
+        auto* bg = CCLayerColor::create({ 20,20,32,100 }, w, 28.f);
+        bg->ignoreAnchorPointForPosition(false);
+        bg->setAnchorPoint({ 0.f, 0.f });
+        addChild(bg, 0);
+
+        auto* lbl = CCLabelBMFont::create(label, "bigFont.fnt");
+        lbl->setScale(0.36f);
+        lbl->setColor({ 190,190,210 });
+        lbl->setAnchorPoint({ 0.f, 0.5f });
+        lbl->setPosition({ 14.f, 14.f });
+        addChild(lbl, 1);
+
+        m_valLbl = CCLabelBMFont::create("", "bigFont.fnt");
+        m_valLbl->setScale(0.38f);
+        m_valLbl->setColor({ 255,220,100 });
+        m_valLbl->setAnchorPoint({ 0.5f, 0.5f });
+        m_valLbl->setPosition({ w - 52.f, 14.f });
+        addChild(m_valLbl, 1);
+        refreshLabel();
+
+        auto* menu = CCMenu::create();
+        menu->setPosition({ 0.f, 0.f });
+        menu->setContentSize({ w, 28.f });
+        addChild(menu, 2);
+
+        auto* minusL = CCLabelBMFont::create("-", "bigFont.fnt");
+        minusL->setScale(0.5f); minusL->setColor({ 200,100,100 });
+        auto* minusB = CCMenuItemSpriteExtra::create(minusL, this, menu_selector(SliderRow::onMinus));
+        minusB->setAnchorPoint({ 1.f, 0.5f });
+        minusB->setPosition({ w - 68.f, 14.f });
+        menu->addChild(minusB);
+
+        auto* plusL = CCLabelBMFont::create("+", "bigFont.fnt");
+        plusL->setScale(0.5f); plusL->setColor({ 100,200,100 });
+        auto* plusB = CCMenuItemSpriteExtra::create(plusL, this, menu_selector(SliderRow::onPlus));
+        plusB->setAnchorPoint({ 1.f, 0.5f });
+        plusB->setPosition({ w - 8.f, 14.f });
+        menu->addChild(plusB);
 
         return true;
+    }
+
+    void refreshLabel() {
+        if (m_isInt) m_valLbl->setString(fmt::format("{}", (int)m_value).c_str());
+        else         m_valLbl->setString(fmt::format("{:.2f}", m_value).c_str());
+    }
+
+    void save() {
+        if (m_isInt) Mod::get()->setSettingValue<int64_t>(m_key.c_str(), (int64_t)m_value);
+        else         Mod::get()->setSettingValue<double>(m_key.c_str(), (double)m_value);
+        if (m_cb) m_cb(m_value);
+    }
+
+    void onMinus(CCObject*) { m_value = std::max(m_min, m_value - m_step); refreshLabel(); save(); }
+    void onPlus(CCObject*)  { m_value = std::min(m_max, m_value + m_step); refreshLabel(); save(); }
+};
+
+// ─────────────────────────────────────────────
+//  ColorPickRow  (inline RGB stepper)
+// ─────────────────────────────────────────────
+class ColorPickRow : public CCNode {
+    CCLayerColor* m_preview = nullptr;
+    int m_r, m_g, m_b;
+
+public:
+    static ColorPickRow* create(float w) {
+        auto* r = new ColorPickRow();
+        if (r->init(w)) { r->autorelease(); return r; }
+        CC_SAFE_DELETE(r); return nullptr;
+    }
+
+    bool init(float w) {
+        if (!CCNode::init()) return false;
+        setContentSize({ w, 60.f });
+
+        auto c = Cryptic::accentColor();
+        m_r = c.r; m_g = c.g; m_b = c.b;
+
+        auto* bg = CCLayerColor::create({ 14,14,24,120 }, w, 60.f);
+        bg->ignoreAnchorPointForPosition(false);
+        bg->setAnchorPoint({ 0.f, 0.f });
+        addChild(bg, 0);
+
+        auto* titleL = CCLabelBMFont::create("Accent Color", "bigFont.fnt");
+        titleL->setScale(0.32f);
+        titleL->setColor({ 160,160,180 });
+        titleL->setAnchorPoint({ 0.f, 0.5f });
+        titleL->setPosition({ 14.f, 50.f });
+        addChild(titleL, 1);
+
+        m_preview = CCLayerColor::create({ (GLubyte)m_r,(GLubyte)m_g,(GLubyte)m_b,255 }, 22.f, 22.f);
+        m_preview->ignoreAnchorPointForPosition(false);
+        m_preview->setAnchorPoint({ 1.f, 0.5f });
+        m_preview->setPosition({ w - 8.f, 30.f });
+        addChild(m_preview, 1);
+
+        buildCh("R", 0, w, { 220,80,80  }, 42.f);
+        buildCh("G", 1, w, { 80,220,80  }, 28.f);
+        buildCh("B", 2, w, { 80,140,220 }, 14.f);
+
+        return true;
+    }
+
+    void buildCh(const char* ch, int idx, float w, ccColor3B col, float y) {
+        auto* lbl = CCLabelBMFont::create(ch, "bigFont.fnt");
+        lbl->setScale(0.3f); lbl->setColor(col);
+        lbl->setAnchorPoint({ 0.f, 0.5f });
+        lbl->setPosition({ 14.f, y });
+        addChild(lbl, 1);
+
+        auto* vl = CCLabelBMFont::create("", "bigFont.fnt");
+        vl->setScale(0.32f); vl->setColor({ 220,220,220 });
+        vl->setAnchorPoint({ 0.5f, 0.5f });
+        vl->setPosition({ w - 72.f, y });
+        vl->setTag(200 + idx);
+        addChild(vl, 1);
+        refreshCh(idx);
+
+        auto* menu = CCMenu::create();
+        menu->setPosition({ 0.f, 0.f });
+        menu->setContentSize({ w, 14.f });
+        addChild(menu, 2);
+
+        auto* mL = CCLabelBMFont::create("-", "bigFont.fnt");
+        mL->setScale(0.44f); mL->setColor({ 200,100,100 });
+        auto* mB = CCMenuItemSpriteExtra::create(mL, this, menu_selector(ColorPickRow::onMinus));
+        mB->setTag(idx); mB->setAnchorPoint({ 1.f,0.5f }); mB->setPosition({ w - 86.f, y });
+        menu->addChild(mB);
+
+        auto* pL = CCLabelBMFont::create("+", "bigFont.fnt");
+        pL->setScale(0.44f); pL->setColor({ 100,200,100 });
+        auto* pB = CCMenuItemSpriteExtra::create(pL, this, menu_selector(ColorPickRow::onPlus));
+        pB->setTag(idx); pB->setAnchorPoint({ 1.f,0.5f }); pB->setPosition({ w - 36.f, y });
+        menu->addChild(pB);
+    }
+
+    void refreshCh(int idx) {
+        int v = idx==0 ? m_r : idx==1 ? m_g : m_b;
+        if (auto* l = dynamic_cast<CCLabelBMFont*>(getChildByTag(200+idx)))
+            l->setString(fmt::format("{}", v).c_str());
+    }
+
+    void applyColor() {
+        m_preview->setColor({ (GLubyte)m_r,(GLubyte)m_g,(GLubyte)m_b });
+        Mod::get()->setSettingValue("accent-color",
+            ccColor3B{ (GLubyte)m_r,(GLubyte)m_g,(GLubyte)m_b });
+    }
+
+    void onMinus(CCObject* s) {
+        int idx = static_cast<CCNode*>(s)->getTag();
+        int& ch = idx==0?m_r:idx==1?m_g:m_b;
+        ch = std::max(0, ch - 10);
+        refreshCh(idx); applyColor();
+    }
+
+    void onPlus(CCObject* s) {
+        int idx = static_cast<CCNode*>(s)->getTag();
+        int& ch = idx==0?m_r:idx==1?m_g:m_b;
+        ch = std::min(255, ch + 10);
+        refreshCh(idx); applyColor();
     }
 };
 
 // ─────────────────────────────────────────────
 //  CrypticPopup
 // ─────────────────────────────────────────────
-class CrypticPopup : public geode::Popup<>, public TextInputDelegate {
+class CrypticPopup : public geode::Popup<> {
 
-    static constexpr int   TABS  = 4;
-    static constexpr float ROW_H = 26.f;
-    static constexpr float SEC_H = 20.f;
-    static constexpr float GAP   = 2.f;
+    static constexpr int   TABS = 5;
+    static constexpr float GAP  = 1.f;
 
-    // All setting keys — order matters (matches tag idx)
     static constexpr const char* KEYS[] = {
         "show-fps",         // 0
         "show-speed",       // 1
@@ -170,59 +352,47 @@ class CrypticPopup : public geode::Popup<>, public TextInputDelegate {
         "show-hitbox",      // 10
         "hitbox-on-death",  // 11
         "layout-mode",      // 12
+        "jump-hack",        // 13
+        "slow-mode",        // 14
     };
-    static constexpr int KEY_COUNT = 13;
+    static constexpr int KEY_COUNT = 15;
 
-    int    m_tab    = 0;
-    float  m_tabW   = 0.f;
-    float  m_tabBarY = 0.f;
+    int   m_tab  = 0;
+    float m_tabW = 0.f, m_tabBarY = 0.f;
 
     CCNode*                m_pages[TABS]   = {};
     CCMenuItemSpriteExtra* m_tabBtns[TABS] = {};
     CCLayerColor*          m_underline     = nullptr;
     CCTextInputNode*       m_searchInput   = nullptr;
+    std::string            m_lastSearch;
 
     std::vector<FeatureRow*> m_allRows;
 
-    // ── Colours ───────────────────────────────
     ccColor3B accent() { return Cryptic::accentColor(); }
     ccColor3B accentDark() {
         auto c = accent();
-        return { (GLubyte)(c.r / 5), (GLubyte)(c.g / 5), (GLubyte)(c.b / 5) };
-    }
-    ccColor3B accentMid() {
-        auto c = accent();
-        return { (GLubyte)(c.r / 2), (GLubyte)(c.g / 2), (GLubyte)(c.b / 2) };
+        return { (GLubyte)(c.r/5),(GLubyte)(c.g/5),(GLubyte)(c.b/5) };
     }
 
-    // ── Row factories ─────────────────────────
-    FeatureRow* makeToggle(const char* label, const char* key, int idx, float w) {
-        return FeatureRow::create(label, key, false, idx, this,
+    FeatureRow* mkTog(const char* lbl, const char* key, int idx, float w) {
+        return FeatureRow::create(lbl, key, false, idx, this,
             menu_selector(CrypticPopup::onToggle), nullptr, w);
     }
-    FeatureRow* makeCmd(const char* label, SEL_MenuHandler sel, float w) {
-        return FeatureRow::create(label, "", true, -1, this,
-            nullptr, sel, w);
+    FeatureRow* mkCmd(const char* lbl, SEL_MenuHandler sel, float w) {
+        return FeatureRow::create(lbl, "", true, -1, this, nullptr, sel, w);
     }
 
-    // ── Page builder ──────────────────────────
-    // Accepts mixed CCNode* (FeatureRow or SectionHeader)
     CCNode* buildPage(std::vector<CCNode*> items, float w, float h) {
         auto* pg = CCNode::create();
         pg->setContentSize({ w, h });
-
-        float y = h - 6.f;
-        int stripeIdx = 0;
+        float y = h - 4.f;
+        int stripe = 0;
         for (auto* item : items) {
-            float itemH = item->getContentSize().height;
-            y -= itemH;
+            y -= item->getContentSize().height;
             item->setPosition({ 4.f, y });
-
-            auto* row = dynamic_cast<FeatureRow*>(item);
-            if (row) {
-                row->setStripe(stripeIdx % 2 == 0);
+            if (auto* row = dynamic_cast<FeatureRow*>(item)) {
+                row->setStripe(stripe++ % 2 == 0);
                 m_allRows.push_back(row);
-                stripeIdx++;
             }
             pg->addChild(item);
             y -= GAP;
@@ -230,199 +400,185 @@ class CrypticPopup : public geode::Popup<>, public TextInputDelegate {
         return pg;
     }
 
-    // Helper to cast FeatureRow* vector to CCNode* vector
-    CCNode* buildPageRows(std::vector<FeatureRow*> rows, float w, float h) {
-        std::vector<CCNode*> items(rows.begin(), rows.end());
-        return buildPage(items, w, h);
-    }
-
 protected:
     bool setup() override {
         auto sz = m_mainLayer->getContentSize();
-        float w = sz.width, h = sz.height;
-        float rowW = w - 10.f;
+        float w = sz.width, h = sz.height, rW = w - 10.f;
 
-        // ── Dark bg with subtle gradient feel ─
-        auto* bg = CCLayerColor::create({ 12, 12, 18, 255 }, w, h);
-        bg->ignoreAnchorPointForPosition(false);
-        bg->setAnchorPoint({ 0.f, 0.f });
+        // BG
+        auto* bg = CCLayerColor::create({ 11,11,17,255 }, w, h);
+        bg->ignoreAnchorPointForPosition(false); bg->setAnchorPoint({ 0.f,0.f });
         m_mainLayer->addChild(bg, -1);
 
-        // subtle top glow
         auto* glow = CCLayerColor::create(
-            { accentDark().r, accentDark().g, accentDark().b, 60 }, w, 60.f
-        );
-        glow->ignoreAnchorPointForPosition(false);
-        glow->setAnchorPoint({ 0.f, 0.f });
-        glow->setPosition({ 0.f, h - 60.f });
+            { accentDark().r,accentDark().g,accentDark().b,80 }, w, 55.f);
+        glow->ignoreAnchorPointForPosition(false); glow->setAnchorPoint({ 0.f,0.f });
+        glow->setPosition({ 0.f, h-55.f });
         m_mainLayer->addChild(glow, -1);
 
-        // ── Header bar ────────────────────────
-        float hdrH = 28.f;
-        auto* hdrBg = CCLayerColor::create(
-            { accentDark().r, accentDark().g, accentDark().b, 255 }, w, hdrH
-        );
-        hdrBg->ignoreAnchorPointForPosition(false);
-        hdrBg->setAnchorPoint({ 0.f, 0.f });
-        hdrBg->setPosition({ 0.f, h - hdrH });
-        m_mainLayer->addChild(hdrBg, 5);
+        // Header
+        float hH = 30.f;
+        auto* hBg = CCLayerColor::create(
+            { accentDark().r,accentDark().g,accentDark().b,255 }, w, hH);
+        hBg->ignoreAnchorPointForPosition(false); hBg->setAnchorPoint({ 0.f,0.f });
+        hBg->setPosition({ 0.f, h-hH });
+        m_mainLayer->addChild(hBg, 5);
 
-        // accent bottom border on header
-        auto* hdrLine = CCLayerColor::create(
-            { accent().r, accent().g, accent().b, 200 }, w, 2.f
-        );
-        hdrLine->ignoreAnchorPointForPosition(false);
-        hdrLine->setAnchorPoint({ 0.f, 0.f });
-        hdrLine->setPosition({ 0.f, h - hdrH - 2.f });
-        m_mainLayer->addChild(hdrLine, 6);
+        auto* hLine = CCLayerColor::create({ accent().r,accent().g,accent().b,220 }, w, 2.f);
+        hLine->ignoreAnchorPointForPosition(false); hLine->setAnchorPoint({ 0.f,0.f });
+        hLine->setPosition({ 0.f, h-hH-2.f });
+        m_mainLayer->addChild(hLine, 6);
 
-        // Title
-        auto* titleLbl = CCLabelBMFont::create("cryptic", "bigFont.fnt");
-        titleLbl->setScale(0.46f);
-        titleLbl->setColor(accent());
-        titleLbl->setAnchorPoint({ 0.f, 0.5f });
-        titleLbl->setPosition({ 10.f, h - hdrH / 2.f });
-        m_mainLayer->addChild(titleLbl, 6);
+        auto* title = CCLabelBMFont::create("cryptic", "bigFont.fnt");
+        title->setScale(0.48f); title->setColor(accent());
+        title->setAnchorPoint({ 0.f,0.5f }); title->setPosition({ 10.f, h-hH/2.f });
+        m_mainLayer->addChild(title, 6);
 
-        // Version tag
-        auto* verLbl = CCLabelBMFont::create("v1.0", "chatFont.fnt");
-        verLbl->setScale(0.5f);
-        verLbl->setColor({ 80, 80, 100 });
-        verLbl->setAnchorPoint({ 0.f, 0.5f });
-        verLbl->setPosition({ 10.f + titleLbl->getContentSize().width * 0.46f + 4.f, h - hdrH / 2.f - 2.f });
-        m_mainLayer->addChild(verLbl, 6);
-
-        // ── Search bar ────────────────────────
-        float sW = 110.f, sH = 18.f;
-
-        // search bg with rounded feel
-        auto* sBg = CCLayerColor::create({ 20, 20, 32, 240 }, sW + 4.f, sH);
-        sBg->ignoreAnchorPointForPosition(false);
-        sBg->setAnchorPoint({ 1.f, 0.5f });
-        sBg->setPosition({ w - 24.f, h - hdrH / 2.f });
+        // Search
+        auto* sBg = CCLayerColor::create({ 18,18,28,230 }, 98.f, 20.f);
+        sBg->ignoreAnchorPointForPosition(false); sBg->setAnchorPoint({ 1.f,0.5f });
+        sBg->setPosition({ w-22.f, h-hH/2.f });
         m_mainLayer->addChild(sBg, 6);
 
-        // search icon
-        auto* sIcon = CCLabelBMFont::create("?", "chatFont.fnt");
-        sIcon->setScale(0.5f);
-        sIcon->setColor({ 100, 100, 130 });
-        sIcon->setAnchorPoint({ 0.f, 0.5f });
-        sIcon->setPosition({ w - 24.f - sW - 2.f, h - hdrH / 2.f });
-        m_mainLayer->addChild(sIcon, 7);
-
-        m_searchInput = CCTextInputNode::create(sW - 4.f, sH - 4.f, "search...", "chatFont.fnt");
-        m_searchInput->setMaxLabelScale(0.45f);
-        m_searchInput->setDelegate(this);
-        m_searchInput->setAnchorPoint({ 1.f, 0.5f });
-        m_searchInput->setPosition({ w - 26.f, h - hdrH / 2.f });
+        m_searchInput = CCTextInputNode::create(90.f, 18.f, "search...", "chatFont.fnt");
+        m_searchInput->setMaxLabelScale(0.46f);
+        m_searchInput->setAnchorPoint({ 1.f,0.5f });
+        m_searchInput->setPosition({ w-24.f, h-hH/2.f });
         m_mainLayer->addChild(m_searchInput, 7);
 
-        // ── Close btn ─────────────────────────
+        // Close
         if (m_closeBtn) m_closeBtn->setVisible(false);
-        auto* xLbl = CCLabelBMFont::create("X", "bigFont.fnt");
-        xLbl->setScale(0.38f);
-        xLbl->setColor({ 210, 60, 60 });
-        auto* xMenu = CCMenu::create();
-        xMenu->setPosition({ w - 8.f, h - hdrH / 2.f });
-        xMenu->addChild(CCMenuItemSpriteExtra::create(
-            xLbl, this, menu_selector(CrypticPopup::onCloseBtn)
-        ));
-        m_mainLayer->addChild(xMenu, 10);
+        auto* xL = CCLabelBMFont::create("X", "bigFont.fnt");
+        xL->setScale(0.38f); xL->setColor({ 210,55,55 });
+        auto* xM = CCMenu::create();
+        xM->setPosition({ w-8.f, h-hH/2.f });
+        xM->addChild(CCMenuItemSpriteExtra::create(
+            xL, this, menu_selector(CrypticPopup::onCloseBtn)));
+        m_mainLayer->addChild(xM, 10);
 
-        // ── Tab bar ───────────────────────────
-        float tabH = 22.f;
-        float tabY = h - hdrH - 2.f - tabH;
-        m_tabBarY  = tabY;
-        m_tabW     = w / TABS;
+        // Tab bar
+        float tH = 22.f, tY = h-hH-2.f-tH;
+        m_tabBarY = tY; m_tabW = w / TABS;
 
-        auto* tabBg = CCLayerColor::create({ 16, 16, 24, 255 }, w, tabH);
-        tabBg->ignoreAnchorPointForPosition(false);
-        tabBg->setAnchorPoint({ 0.f, 0.f });
-        tabBg->setPosition({ 0.f, tabY });
-        m_mainLayer->addChild(tabBg, 5);
+        auto* tBg = CCLayerColor::create({ 14,14,22,255 }, w, tH);
+        tBg->ignoreAnchorPointForPosition(false); tBg->setAnchorPoint({ 0.f,0.f });
+        tBg->setPosition({ 0.f, tY });
+        m_mainLayer->addChild(tBg, 5);
 
-        // vertical dividers between tabs
         for (int i = 1; i < TABS; i++) {
-            auto* div = CCLayerColor::create({ 40, 40, 60, 150 }, 1.f, tabH - 6.f);
-            div->ignoreAnchorPointForPosition(false);
-            div->setAnchorPoint({ 0.f, 0.5f });
-            div->setPosition({ m_tabW * i, tabY + tabH / 2.f });
+            auto* div = CCLayerColor::create({ 35,35,55,160 }, 1.f, tH-8.f);
+            div->ignoreAnchorPointForPosition(false); div->setAnchorPoint({ 0.5f,0.5f });
+            div->setPosition({ m_tabW*i, tY+tH/2.f });
             m_mainLayer->addChild(div, 6);
         }
 
-        static const char* tabNames[TABS] = { "Global", "HUD", "Cheats", "Commands" };
-        auto* tabMenu = CCMenu::create();
-        tabMenu->setPosition({ 0.f, 0.f });
-        tabMenu->setContentSize({ w, tabH });
-        m_mainLayer->addChild(tabMenu, 6);
+        static const char* tNames[TABS] = { "Global","HUD","Cheats","Commands","Style" };
+        auto* tMenu = CCMenu::create();
+        tMenu->setPosition({ 0.f,0.f }); tMenu->setContentSize({ w, tH });
+        m_mainLayer->addChild(tMenu, 6);
 
         for (int i = 0; i < TABS; i++) {
-            auto* lbl = CCLabelBMFont::create(tabNames[i], "bigFont.fnt");
-            lbl->setScale(0.34f);
-            lbl->setColor(i == 0 ? accent() : ccColor3B{ 110, 110, 130 });
-
+            auto* lbl = CCLabelBMFont::create(tNames[i], "bigFont.fnt");
+            lbl->setScale(0.30f);
+            lbl->setColor(i == 0 ? accent() : ccColor3B{ 105,105,125 });
             auto* btn = CCMenuItemSpriteExtra::create(
-                lbl, this, menu_selector(CrypticPopup::onTab)
-            );
+                lbl, this, menu_selector(CrypticPopup::onTab));
             btn->setTag(i);
-            btn->setPosition({ m_tabW * i + m_tabW / 2.f, tabY + tabH / 2.f });
+            btn->setPosition({ m_tabW*i + m_tabW/2.f, tY+tH/2.f });
             m_tabBtns[i] = btn;
-            tabMenu->addChild(btn);
+            tMenu->addChild(btn);
         }
 
-        // Underline indicator
         m_underline = CCLayerColor::create(
-            { accent().r, accent().g, accent().b, 230 }, m_tabW, 2.f
-        );
+            { accent().r,accent().g,accent().b,240 }, m_tabW, 2.f);
         m_underline->ignoreAnchorPointForPosition(false);
-        m_underline->setAnchorPoint({ 0.f, 0.f });
-        m_underline->setPosition({ 0.f, tabY });
+        m_underline->setAnchorPoint({ 0.f,0.f });
+        m_underline->setPosition({ 0.f, tY });
         m_mainLayer->addChild(m_underline, 7);
 
-        // ── Pages ─────────────────────────────
-        float pageH = tabY - 4.f;
+        float pH = tY - 4.f;
 
-        // Tab 0 — Global (previously mislabeled, now actually global/unlocks)
+        // Page 0 — Global
         m_pages[0] = buildPage({
-            (CCNode*)SectionHeader::create("Unlocks", accent(), rowW),
-            (CCNode*)makeToggle("Unlock All Icons",    "unlock-all",     7, rowW),
-            (CCNode*)makeToggle("Unlock All Levels",   "unlock-levels",  8, rowW),
-            (CCNode*)makeToggle("100% All Levels",     "fake-100",       9, rowW),
-        }, w, pageH);
+            (CCNode*)SectionHeader::create("Unlocks", accent(), rW),
+            (CCNode*)mkTog("Unlock All Icons",  "unlock-all",    7, rW),
+            (CCNode*)mkTog("Unlock All Levels", "unlock-levels", 8, rW),
+            (CCNode*)mkTog("100% All Levels",   "fake-100",      9, rW),
+        }, w, pH);
 
-        // Tab 1 — HUD
+        // Page 1 — HUD
         m_pages[1] = buildPage({
-            (CCNode*)SectionHeader::create("HUD Display", accent(), rowW),
-            (CCNode*)makeToggle("FPS",        "show-fps",      0, rowW),
-            (CCNode*)makeToggle("Speed",      "show-speed",    1, rowW),
-            (CCNode*)makeToggle("Attempts",   "show-attempts", 2, rowW),
-            (CCNode*)makeToggle("Best Run %", "show-best-run", 3, rowW),
-            (CCNode*)makeToggle("CPS",        "show-cps",      4, rowW),
-        }, w, pageH);
+            (CCNode*)SectionHeader::create("HUD Display", accent(), rW),
+            (CCNode*)mkTog("FPS",        "show-fps",      0, rW),
+            (CCNode*)mkTog("Speed",      "show-speed",    1, rW),
+            (CCNode*)mkTog("Attempts",   "show-attempts", 2, rW),
+            (CCNode*)mkTog("Best Run %", "show-best-run", 3, rW),
+            (CCNode*)mkTog("CPS",        "show-cps",      4, rW),
+        }, w, pH);
 
-        // Tab 2 — Cheats
+        // Page 2 — Cheats
         m_pages[2] = buildPage({
-            (CCNode*)SectionHeader::create("Gameplay", accent(), rowW),
-            (CCNode*)makeToggle("Noclip",           "noclip",           5, rowW),
-            (CCNode*)makeToggle("Instant Complete", "instant-complete", 6, rowW),
-            (CCNode*)SectionHeader::create("Visual", accent(), rowW),
-            (CCNode*)makeToggle("Show Hitbox",      "show-hitbox",      10, rowW),
-            (CCNode*)makeToggle("Hitbox On Death",  "hitbox-on-death",  11, rowW),
-            (CCNode*)makeToggle("Layout Mode",      "layout-mode",      12, rowW),
-        }, w, pageH);
+            (CCNode*)SectionHeader::create("Gameplay", accent(), rW),
+            (CCNode*)mkTog("Noclip",           "noclip",           5, rW),
+            (CCNode*)mkTog("Instant Complete", "instant-complete", 6, rW),
+            (CCNode*)mkTog("Jump Hack",        "jump-hack",        13, rW),
+            (CCNode*)mkTog("Slow Mode",        "slow-mode",        14, rW),
+            (CCNode*)SectionHeader::create("Visual", accent(), rW),
+            (CCNode*)mkTog("Show Hitbox",      "show-hitbox",      10, rW),
+            (CCNode*)mkTog("Hitbox On Death",  "hitbox-on-death",  11, rW),
+            (CCNode*)mkTog("Layout Mode",      "layout-mode",      12, rW),
+        }, w, pH);
 
-        // Tab 3 — Commands
+        // Page 3 — Commands
         m_pages[3] = buildPage({
-            (CCNode*)SectionHeader::create("Level", accent(), rowW),
-            (CCNode*)makeCmd("Restart Level",    menu_selector(CrypticPopup::cmdRestart),  rowW),
-            (CCNode*)makeCmd("Toggle Practice",  menu_selector(CrypticPopup::cmdPractice), rowW),
-            (CCNode*)makeCmd("Copy Level ID",    menu_selector(CrypticPopup::cmdCopyID),   rowW),
-            (CCNode*)makeCmd("Show Best %",      menu_selector(CrypticPopup::cmdBest),     rowW),
-            (CCNode*)SectionHeader::create("Cheats", accent(), rowW),
-            (CCNode*)makeCmd("Show Hitbox",      menu_selector(CrypticPopup::cmdHitbox),   rowW),
-            (CCNode*)makeCmd("Hitbox On Death",  menu_selector(CrypticPopup::cmdHitboxDeath), rowW),
-            (CCNode*)makeCmd("Layout Mode",      menu_selector(CrypticPopup::cmdLayout),   rowW),
-        }, w, pageH);
+            (CCNode*)SectionHeader::create("Level", accent(), rW),
+            (CCNode*)mkCmd("Restart Level",    menu_selector(CrypticPopup::cmdRestart),     rW),
+            (CCNode*)mkCmd("Toggle Practice",  menu_selector(CrypticPopup::cmdPractice),    rW),
+            (CCNode*)mkCmd("Copy Level ID",    menu_selector(CrypticPopup::cmdCopyID),      rW),
+            (CCNode*)mkCmd("Show Best %",      menu_selector(CrypticPopup::cmdBest),        rW),
+            (CCNode*)SectionHeader::create("Visual", accent(), rW),
+            (CCNode*)mkCmd("Toggle Hitbox",    menu_selector(CrypticPopup::cmdHitbox),      rW),
+            (CCNode*)mkCmd("Hitbox On Death",  menu_selector(CrypticPopup::cmdHitboxDeath), rW),
+            (CCNode*)mkCmd("Layout Mode",      menu_selector(CrypticPopup::cmdLayout),      rW),
+            (CCNode*)SectionHeader::create("Orb Farm", accent(), rW),
+            (CCNode*)mkCmd("Start Farm",       menu_selector(CrypticPopup::cmdFarmStart),   rW),
+            (CCNode*)mkCmd("Stop Farm",        menu_selector(CrypticPopup::cmdFarmStop),    rW),
+            (CCNode*)mkCmd("Farm Status",      menu_selector(CrypticPopup::cmdFarmStatus),  rW),
+        }, w, pH);
+
+        // Page 4 — Style
+        {
+            auto* pg = CCNode::create();
+            pg->setContentSize({ w, pH });
+            float y = pH - 4.f;
+
+            auto place = [&](CCNode* n) {
+                y -= n->getContentSize().height;
+                n->setPosition({ 4.f, y });
+                pg->addChild(n);
+                y -= GAP;
+            };
+
+            place(ColorPickRow::create(rW));
+
+            place(SectionHeader::create("Slow Mode Speed", accent(), rW));
+            place(SliderRow::create("Speed", "slow-mode-speed",
+                0.1f, 1.0f, 0.1f, false, rW,
+                [](float v) {
+                    if (Mod::get()->getSettingValue<bool>("slow-mode"))
+                        CCDirector::get()->getScheduler()->setTimeScale(v);
+                }));
+
+            place(SectionHeader::create("Jump Hack", accent(), rW));
+            place(SliderRow::create("Extra Jumps", "jump-hack-count",
+                1.f, 10.f, 1.f, true, rW, nullptr));
+
+            place(SectionHeader::create("Orb Farm", accent(), rW));
+            place(SliderRow::create("Orb Target", "orb-farm-target",
+                1000.f, 100000.f, 1000.f, true, rW, nullptr));
+
+            m_pages[4] = pg;
+        }
 
         for (int i = 0; i < TABS; i++) {
             m_pages[i]->setPosition({ 0.f, 2.f });
@@ -430,50 +586,57 @@ protected:
             m_mainLayer->addChild(m_pages[i], 4);
         }
 
-        // Bottom accent line
         auto* bot = CCLayerColor::create(
-            { accent().r, accent().g, accent().b, 160 }, w, 2.f
-        );
+            { accent().r,accent().g,accent().b,170 }, w, 2.f);
         bot->setPosition({ 0.f, 0.f });
         m_mainLayer->addChild(bot, 5);
 
+        this->schedule(schedule_selector(CrypticPopup::pollSearch), 0.05f);
         return true;
     }
 
-    // ── Search — FIXED ────────────────────────
-    // Hides rows that don't match, shows all pages while searching
-    void textChanged(CCTextInputNode* input) override {
-        std::string raw = input->getString();
+    // ── Search poll ───────────────────────────
+    void pollSearch(float) {
+        if (!m_searchInput) return;
+        std::string raw = m_searchInput->getString();
+        if (raw == m_lastSearch) return;
+        m_lastSearch = raw;
+
         std::string lower = raw;
         std::transform(lower.begin(), lower.end(), lower.begin(), ::tolower);
-        bool searching = !lower.empty();
+        bool s = !lower.empty();
 
         for (int i = 0; i < TABS; i++)
-            m_pages[i]->setVisible(searching || i == m_tab);
+            m_pages[i]->setVisible(s || i == m_tab);
 
         for (auto* row : m_allRows) {
             std::string lbl = row->m_label;
             std::transform(lbl.begin(), lbl.end(), lbl.begin(), ::tolower);
-            bool match = !searching || (lbl.find(lower) != std::string::npos);
+            bool match = !s || lbl.find(lower) != std::string::npos;
             row->setVisible(match);
-            if (match) row->setHighlight(searching);
-            else       row->setStripe(false);
+            row->setHighlight(match && s);
+            if (!match) row->setStripe(false);
         }
     }
 
-    // ── Tab switch ────────────────────────────
+    // ── Tab ───────────────────────────────────
     void onTab(CCObject* s) {
         int tab = static_cast<CCNode*>(s)->getTag();
         if (tab == m_tab) return;
         m_tab = tab;
-
-        // clear search when switching tabs
         if (m_searchInput) m_searchInput->setString("");
+        m_lastSearch = "";
 
+        int stripe = 0;
+        for (auto* row : m_allRows) {
+            row->setVisible(true);
+            row->setHighlight(false);
+            row->setStripe(stripe++ % 2 == 0);
+        }
         for (int i = 0; i < TABS; i++) {
             m_pages[i]->setVisible(i == tab);
             if (auto* l = dynamic_cast<CCLabelBMFont*>(m_tabBtns[i]->getNormalImage()))
-                l->setColor(i == tab ? accent() : ccColor3B{ 110, 110, 130 });
+                l->setColor(i == tab ? accent() : ccColor3B{105,105,125});
         }
         m_underline->setPositionX(tab * m_tabW);
     }
@@ -487,21 +650,32 @@ protected:
         bool cur = Mod::get()->getSettingValue<bool>(KEYS[idx]);
         Mod::get()->setSettingValue(KEYS[idx], !cur);
 
-        // Notifications for important toggles
-        struct { int idx; const char* on; const char* off; } notifs[] = {
-            { 5,  "Noclip ON",           "Noclip OFF"           },
-            { 6,  "Instant Complete ON", "Instant Complete OFF" },
+        if (idx == 14) {
+            if (!cur) {
+                float spd = 0.5f;
+                try { spd = (float)Mod::get()->getSettingValue<double>("slow-mode-speed"); }
+                catch(...) {}
+                CCDirector::get()->getScheduler()->setTimeScale(spd);
+            } else {
+                CCDirector::get()->getScheduler()->setTimeScale(1.f);
+            }
+        }
+
+        struct { int i; const char* on; const char* off; } msgs[] = {
+            {  5, "Noclip ON",           "Noclip OFF"           },
+            {  6, "Instant Complete ON", "Instant Complete OFF" },
             { 10, "Show Hitbox ON",      "Show Hitbox OFF"      },
             { 11, "Hitbox On Death ON",  "Hitbox On Death OFF"  },
             { 12, "Layout Mode ON",      "Layout Mode OFF"      },
+            { 13, "Jump Hack ON",        "Jump Hack OFF"        },
+            { 14, "Slow Mode ON",        "Slow Mode OFF"        },
         };
-        for (auto& n : notifs) {
-            if (idx == n.idx) {
-                Notification::create(!cur ? n.on : n.off,
+        for (auto& m : msgs)
+            if (idx == m.i) {
+                Notification::create(!cur ? m.on : m.off,
                     !cur ? NotificationIcon::Success : NotificationIcon::Error, 1.2f)->show();
                 break;
             }
-        }
     }
 
     // ── Commands ──────────────────────────────
@@ -533,8 +707,7 @@ protected:
         auto* pl = PlayLayer::get();
         if (!pl->m_level) return;
         clipboard::write(fmt::format("{}", (int)pl->m_level->m_levelID));
-        Notification::create(
-            fmt::format("Copied ID: {}", (int)pl->m_level->m_levelID),
+        Notification::create(fmt::format("Copied ID: {}", (int)pl->m_level->m_levelID),
             NotificationIcon::Success, 2.f)->show();
     }
 
@@ -542,10 +715,10 @@ protected:
         if (!checkLevel()) return;
         auto* pl = PlayLayer::get();
         if (!pl->m_level) return;
-        FLAlertLayer::create("Best %",
+        FLAlertLayer::create(nullptr, "Best %",
             fmt::format("All-time: <cy>{:.0f}%</c>\nSession: <cg>{:.1f}%</c>",
-                (float)pl->m_level->m_normalPercent,
-                Cryptic::sessionBest).c_str(), "OK")->show();
+                (float)pl->m_level->m_normalPercent, Cryptic::sessionBest).c_str(),
+            "OK", nullptr)->show();
     }
 
     void cmdHitbox(CCObject*) {
@@ -569,10 +742,23 @@ protected:
             !cur ? NotificationIcon::Success : NotificationIcon::Error, 1.2f)->show();
     }
 
+    void cmdFarmStart(CCObject*) {
+        Cryptic::startOrbFarm((int)Mod::get()->getSettingValue<int64_t>("orb-farm-target"));
+    }
+
+    void cmdFarmStop(CCObject*) {
+        Cryptic::stopOrbFarm();
+    }
+
+    void cmdFarmStatus(CCObject*) {
+        FLAlertLayer::create(nullptr, "Orb Farm",
+            Cryptic::orbFarmStatus().c_str(), "OK", nullptr)->show();
+    }
+
 public:
     static CrypticPopup* create() {
         auto* p = new CrypticPopup();
-        if (p->initAnchored(340.f, 290.f)) { p->autorelease(); return p; }
+        if (p->initAnchored(340.f, 300.f)) { p->autorelease(); return p; }
         CC_SAFE_DELETE(p); return nullptr;
     }
 };

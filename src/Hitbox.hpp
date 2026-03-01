@@ -4,8 +4,8 @@
 
 // ─────────────────────────────────────────────
 //  Hitbox / Hitbox On Death / Layout Mode
-//  NOTE: remove destroyPlayer + postUpdate from
-//  PlayLayerHook.hpp to avoid duplicate hooks!
+//  NOTE: remove destroyPlayer + postUpdate +
+//  init from PlayLayerHook.hpp — handled here!
 // ─────────────────────────────────────────────
 
 namespace Cryptic {
@@ -13,6 +13,11 @@ namespace Cryptic {
 }
 
 class $modify(CrypticHitboxLayer, PlayLayer) {
+
+    // ── Named method for scheduleOnce ─────────
+    void hideHitboxFlash(float) {
+        Cryptic::hitboxFlash = false;
+    }
 
     bool init(GJGameLevel* level, bool useReplay, bool dontCreate) {
         if (!PlayLayer::init(level, useReplay, dontCreate)) return false;
@@ -51,9 +56,9 @@ class $modify(CrypticHitboxLayer, PlayLayer) {
         // Hitbox on death flash
         if (Mod::get()->getSettingValue<bool>("hitbox-on-death")) {
             Cryptic::hitboxFlash = true;
-            this->scheduleOnce([](float) {
-                Cryptic::hitboxFlash = false;
-            }, 2.f, "cryptic_hitbox_flash");
+            this->scheduleOnce(
+                schedule_selector(CrypticHitboxLayer::hideHitboxFlash), 2.f
+            );
         }
     }
 
