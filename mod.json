@@ -8,7 +8,7 @@
     },
     "links": {
         "community": "link",
-        "source":"github" 
+        "source":"https://github.com/kiwizariudev/cryptic" 
     },
     "id": "kiwizariu.cryptic",
     "name": "cryptic",
@@ -18,7 +18,6 @@
     "description": "Practice tools.",
     "dependencies": {
         "geode.node-ids": ">=v1.20.0"
-	
     },
     "settings": {
         "appearance": {
@@ -75,6 +74,41 @@
             "type": "bool",
             "name": "Instant Complete",
             "description": "Level completes immediately on start.",
+            "default": false
+        },
+        "unlock-all": {
+            "type": "bool",
+            "name": "Unlock All Icons",
+            "description": "Makes all icons, colors, and cosmetics appear unlocked.",
+            "default": false
+        },
+        "unlock-levels": {
+            "type": "bool",
+            "name": "Unlock All Levels",
+            "description": "Unlocks all official RobTop levels.",
+            "default": false
+        },
+        "fake-100": {
+            "type": "bool",
+            "name": "Show 100% on All Levels",
+            "description": "Displays 100% completion on all official levels.",
+            "default": false
+        },
+        "show-hitbox": {
+            "type": "bool",
+            "name": "Show Hitbox",
+            "default": false
+        },
+        "hitbox-on-death": {
+            "type": "bool",
+            "name": "Hitbox On Death",
+            "description": "Briefly shows hitboxes when you die.",
+            "default": false
+        },
+        "layout-mode": {
+            "type": "bool",
+            "name": "Layout Mode",
+            "description": "Hides backgrounds for a cleaner editor-like view.",
             "default": false
         }
     }
